@@ -73,6 +73,7 @@ namespace YNBT
 		{
 			readFromSpan<T>(data);
 		}
+
 		NBTFile(const std::string& name, const CompoundTag& tag)
 		{
 			mRootName = name;
@@ -88,6 +89,8 @@ namespace YNBT
 		{
 			readFromSpan<T>(data);
 		}
+
+
 
 		template<NBTInterfaceImpl T>
 		std::vector<unsigned char> Serialize()

@@ -3,7 +3,7 @@
 #include <absl/container/flat_hash_map.h>
 #include <ynbt/Internal/YNBTWriterConcept.hpp>
 #include <variant>
-
+#include <functional>
 
 namespace YNBT
 {
@@ -20,6 +20,23 @@ namespace YNBT
 	class CompoundTag;
 	class IntArrayTag;
 	class LongArrayTag;
+
+	enum class TagID
+	{
+		EndTag,
+		ByteTag,
+		ShortTag,
+		IntTag,
+		LongTag,
+		FloatTag,
+		DoubleTag,
+		ByteArrayTag,
+		StringTag,
+		ListTag,
+		CompoundTag,
+		IntArrayTag,
+		LongArrayTag
+	};
 
 	using Tag = std::variant<EndTag, ByteTag, ShortTag, IntTag, LongTag, FloatTag, DoubleTag, ByteArrayTag, StringTag, ListTag, CompoundTag, IntArrayTag, LongArrayTag>;
 
@@ -59,16 +76,16 @@ namespace YNBT
 	private:
 		char mValue;
 	public:
-		ByteTag(char value = {0}) : mValue(value) {}
+		ByteTag(char value = { 0 }) : mValue(value) {}
 
 		template<NBTInterfaceImpl T>
-		ByteTag&& Write(BinaryStream<uint8_t>& stream) 
+		ByteTag&& Write(BinaryStream<uint8_t>& stream)
 		{
 			T::WriteI8(mValue, stream);
 			return std::move(*this);
 		}
 		template<NBTInterfaceImpl T>
-		ByteTag&& Read(BinaryStream<uint8_t>& stream) 
+		ByteTag&& Read(BinaryStream<uint8_t>& stream)
 		{
 			mValue = T::ReadI8(stream);
 			return std::move(*this);
@@ -86,21 +103,24 @@ namespace YNBT
 			return mValue;
 		}
 
+		decltype(mValue) operator++() { mValue++; return mValue; }
+		decltype(mValue) operator++(int) { mValue++; return mValue; }
+		void SetValue(decltype(mValue) value) { mValue = value; }
 	};
 	class ShortTag
 	{
 	private:
 		short mValue;
 	public:
-		ShortTag(short value = {0}) : mValue(value) {}
+		ShortTag(short value = { 0 }) : mValue(value) {}
 		template<NBTInterfaceImpl T>
-		ShortTag&& Write(BinaryStream<uint8_t>& stream) 
+		ShortTag&& Write(BinaryStream<uint8_t>& stream)
 		{
 			T::WriteI16(mValue, stream);
 			return std::move(*this);
 		}
 		template<NBTInterfaceImpl T>
-		ShortTag&& Read(BinaryStream<uint8_t>& stream) 
+		ShortTag&& Read(BinaryStream<uint8_t>& stream)
 		{
 			mValue = T::ReadI16(stream);
 			return std::move(*this);
@@ -117,21 +137,60 @@ namespace YNBT
 		{
 			return mValue;
 		}
+		void SetValue(decltype(mValue) value) { mValue = value; }
+
+		decltype(mValue) operator++() { mValue++; return mValue; }
+		decltype(mValue) operator++(int) { mValue++; return mValue; }
+
+		decltype(mValue) operator--() { mValue--; return mValue; }
+		decltype(mValue) operator--(int) { mValue--; return mValue; }
+
+		decltype(mValue) operator+=(int value) { mValue += value; return mValue; }
+		decltype(mValue) operator-=(int value) { mValue -= value; return mValue; }
+		decltype(mValue) operator*=(int value) { mValue *= value; return mValue; }
+		decltype(mValue) operator/=(int value) { mValue /= value; return mValue; }
+		decltype(mValue) operator%=(int value) { mValue %= value; return mValue; }
+		decltype(mValue) operator&=(int value) { mValue &= value; return mValue; }
+		decltype(mValue) operator|=(int value) { mValue |= value; return mValue; }
+		decltype(mValue) operator^=(int value) { mValue ^= value; return mValue; }
+		decltype(mValue) operator<<=(int value) { mValue <<= value; return mValue; }
+		decltype(mValue) operator>>=(int value) { mValue >>= value; return mValue; }
+		decltype(mValue) operator+(int value) { return mValue + value; }
+		decltype(mValue) operator-(int value) { return mValue - value; }
+		decltype(mValue) operator*(int value) { return mValue * value; }
+		decltype(mValue) operator/(int value) { return mValue / value; }
+		decltype(mValue) operator%(int value) { return mValue % value; }
+		decltype(mValue) operator&(int value) { return mValue & value; }
+		decltype(mValue) operator|(int value) { return mValue | value; }
+		decltype(mValue) operator^(int value) { return mValue ^ value; }
+		decltype(mValue) operator<<(int value) { return mValue << value; }
+		decltype(mValue) operator>>(int value) { return mValue >> value; }
+		decltype(mValue) operator-() { return -mValue; }
+		decltype(mValue) operator~() { return ~mValue; }
+		bool operator==(int value) { return mValue == value; }
+		bool operator!=(int value) { return mValue != value; }
+		bool operator<(int value) { return mValue < value; }
+		bool operator>(int value) { return mValue > value; }
+		bool operator<=(int value) { return mValue <= value; }
+		bool operator>=(int value) { return mValue >= value; }
+		bool operator&&(int value) { return mValue && value; }
+		bool operator||(int value) { return mValue || value; }
+		bool operator!() { return !mValue; }
 	};
 	class IntTag
 	{
 	private:
 		int mValue;
 	public:
-		IntTag(int value = {0}) : mValue(value) {}
+		IntTag(int value = { 0 }) : mValue(value) {}
 		template<NBTInterfaceImpl T>
-		IntTag&& Write(BinaryStream<uint8_t>& stream) 
+		IntTag&& Write(BinaryStream<uint8_t>& stream)
 		{
 			T::WriteI32(mValue, stream);
 			return std::move(*this);
 		}
 		template<NBTInterfaceImpl T>
-		IntTag&& Read(BinaryStream<uint8_t>& stream) 
+		IntTag&& Read(BinaryStream<uint8_t>& stream)
 		{
 			mValue = T::ReadI32(stream);
 			return std::move(*this);
@@ -148,21 +207,60 @@ namespace YNBT
 		{
 			return mValue;
 		}
+		void SetValue(decltype(mValue) value) { mValue = value; }
+		decltype(mValue) operator++() { mValue++; return mValue; }
+		decltype(mValue) operator++(int) { mValue++; return mValue; }
+
+		decltype(mValue) operator--() { mValue--; return mValue; }
+		decltype(mValue) operator--(int) { mValue--; return mValue; }
+
+		decltype(mValue) operator+=(int value) { mValue += value; return mValue; }
+		decltype(mValue) operator-=(int value) { mValue -= value; return mValue; }
+		decltype(mValue) operator*=(int value) { mValue *= value; return mValue; }
+		decltype(mValue) operator/=(int value) { mValue /= value; return mValue; }
+		decltype(mValue) operator%=(int value) { mValue %= value; return mValue; }
+		decltype(mValue) operator&=(int value) { mValue &= value; return mValue; }
+		decltype(mValue) operator|=(int value) { mValue |= value; return mValue; }
+		decltype(mValue) operator^=(int value) { mValue ^= value; return mValue; }
+		decltype(mValue) operator<<=(int value) { mValue <<= value; return mValue; }
+		decltype(mValue) operator>>=(int value) { mValue >>= value; return mValue; }
+		decltype(mValue) operator+(int value) { return mValue + value; }
+		decltype(mValue) operator-(int value) { return mValue - value; }
+		decltype(mValue) operator*(int value) { return mValue * value; }
+		decltype(mValue) operator/(int value) { return mValue / value; }
+		decltype(mValue) operator%(int value) { return mValue % value; }
+		decltype(mValue) operator&(int value) { return mValue & value; }
+		decltype(mValue) operator|(int value) { return mValue | value; }
+		decltype(mValue) operator^(int value) { return mValue ^ value; }
+		decltype(mValue) operator<<(int value) { return mValue << value; }
+		decltype(mValue) operator>>(int value) { return mValue >> value; }
+		decltype(mValue) operator-() { return -mValue; }
+		decltype(mValue) operator~() { return ~mValue; }
+		bool operator==(int value) { return mValue == value; }
+		bool operator!=(int value) { return mValue != value; }
+		bool operator<(int value) { return mValue < value; }
+		bool operator>(int value) { return mValue > value; }
+		bool operator<=(int value) { return mValue <= value; }
+		bool operator>=(int value) { return mValue >= value; }
+		bool operator&&(int value) { return mValue && value; }
+		bool operator||(int value) { return mValue || value; }
+		bool operator!() { return !mValue; }
+
 	};
 	class LongTag
 	{
 	private:
 		long long mValue;
 	public:
-		LongTag(long long value = {0}) : mValue(value) {}
+		LongTag(long long value = { 0 }) : mValue(value) {}
 		template<NBTInterfaceImpl T>
-		LongTag&& Write(BinaryStream<uint8_t>& stream) 
+		LongTag&& Write(BinaryStream<uint8_t>& stream)
 		{
 			T::WriteI64(mValue, stream);
 			return std::move(*this);
 		}
 		template<NBTInterfaceImpl T>
-		LongTag&& Read(BinaryStream<uint8_t>& stream) 
+		LongTag&& Read(BinaryStream<uint8_t>& stream)
 		{
 			mValue = T::ReadI64(stream);
 			return std::move(*this);
@@ -179,21 +277,59 @@ namespace YNBT
 		{
 			return mValue;
 		}
+		void SetValue(decltype(mValue) value) { mValue = value; }
+		decltype(mValue) operator++() { mValue++; return mValue; }
+		decltype(mValue) operator++(int) { mValue++; return mValue; }
+
+		decltype(mValue) operator--() { mValue--; return mValue; }
+		decltype(mValue) operator--(int) { mValue--; return mValue; }
+
+		decltype(mValue) operator+=(int value) { mValue += value; return mValue; }
+		decltype(mValue) operator-=(int value) { mValue -= value; return mValue; }
+		decltype(mValue) operator*=(int value) { mValue *= value; return mValue; }
+		decltype(mValue) operator/=(int value) { mValue /= value; return mValue; }
+		decltype(mValue) operator%=(int value) { mValue %= value; return mValue; }
+		decltype(mValue) operator&=(int value) { mValue &= value; return mValue; }
+		decltype(mValue) operator|=(int value) { mValue |= value; return mValue; }
+		decltype(mValue) operator^=(int value) { mValue ^= value; return mValue; }
+		decltype(mValue) operator<<=(int value) { mValue <<= value; return mValue; }
+		decltype(mValue) operator>>=(int value) { mValue >>= value; return mValue; }
+		decltype(mValue) operator+(int value) { return mValue + value; }
+		decltype(mValue) operator-(int value) { return mValue - value; }
+		decltype(mValue) operator*(int value) { return mValue * value; }
+		decltype(mValue) operator/(int value) { return mValue / value; }
+		decltype(mValue) operator%(int value) { return mValue % value; }
+		decltype(mValue) operator&(int value) { return mValue & value; }
+		decltype(mValue) operator|(int value) { return mValue | value; }
+		decltype(mValue) operator^(int value) { return mValue ^ value; }
+		decltype(mValue) operator<<(int value) { return mValue << value; }
+		decltype(mValue) operator>>(int value) { return mValue >> value; }
+		decltype(mValue) operator-() { return -mValue; }
+		decltype(mValue) operator~() { return ~mValue; }
+		bool operator==(int value) { return mValue == value; }
+		bool operator!=(int value) { return mValue != value; }
+		bool operator<(int value) { return mValue < value; }
+		bool operator>(int value) { return mValue > value; }
+		bool operator<=(int value) { return mValue <= value; }
+		bool operator>=(int value) { return mValue >= value; }
+		bool operator&&(int value) { return mValue && value; }
+		bool operator||(int value) { return mValue || value; }
+		bool operator!() { return !mValue; }
 	};
 	class FloatTag
 	{
 	private:
 		float mValue;
 	public:
-		FloatTag(float value = {0}) : mValue(value) {}
+		FloatTag(float value = { 0 }) : mValue(value) {}
 		template<NBTInterfaceImpl T>
-		FloatTag&& Write(BinaryStream<uint8_t>& stream) 
+		FloatTag&& Write(BinaryStream<uint8_t>& stream)
 		{
 			T::WriteF32(mValue, stream);
 			return std::move(*this);
 		}
 		template<NBTInterfaceImpl T>
-		FloatTag&& Read(BinaryStream<uint8_t>& stream) 
+		FloatTag&& Read(BinaryStream<uint8_t>& stream)
 		{
 			mValue = T::ReadF32(stream);
 			return std::move(*this);
@@ -210,21 +346,46 @@ namespace YNBT
 		{
 			return mValue;
 		}
+		void SetValue(decltype(mValue) value) { mValue = value; }
+		decltype(mValue) operator++() { mValue++; return mValue; }
+		decltype(mValue) operator++(int) { mValue++; return mValue; }
+
+		decltype(mValue) operator--() { mValue--; return mValue; }
+		decltype(mValue) operator--(int) { mValue--; return mValue; }
+
+		decltype(mValue) operator+=(int value) { mValue += value; return mValue; }
+		decltype(mValue) operator-=(int value) { mValue -= value; return mValue; }
+		decltype(mValue) operator*=(int value) { mValue *= value; return mValue; }
+		decltype(mValue) operator/=(int value) { mValue /= value; return mValue; }
+		decltype(mValue) operator+(int value) { return mValue + value; }
+		decltype(mValue) operator-(int value) { return mValue - value; }
+		decltype(mValue) operator*(int value) { return mValue * value; }
+		decltype(mValue) operator/(int value) { return mValue / value; }
+		decltype(mValue) operator-() { return -mValue; }
+		bool operator==(int value) { return mValue == value; }
+		bool operator!=(int value) { return mValue != value; }
+		bool operator<(int value) { return mValue < value; }
+		bool operator>(int value) { return mValue > value; }
+		bool operator<=(int value) { return mValue <= value; }
+		bool operator>=(int value) { return mValue >= value; }
+		bool operator&&(int value) { return mValue && value; }
+		bool operator||(int value) { return mValue || value; }
+		bool operator!() { return !mValue; }
 	};
 	class DoubleTag
 	{
 	private:
 		double mValue;
 	public:
-		DoubleTag(double value = {0}) : mValue(value) {}
+		DoubleTag(double value = { 0 }) : mValue(value) {}
 		template<NBTInterfaceImpl T>
-		DoubleTag&& Write(BinaryStream<uint8_t>& stream) 
+		DoubleTag&& Write(BinaryStream<uint8_t>& stream)
 		{
 			T::WriteF64(mValue, stream);
 			return std::move(*this);
 		}
 		template<NBTInterfaceImpl T>
-		DoubleTag&& Read(BinaryStream<uint8_t>& stream) 
+		DoubleTag&& Read(BinaryStream<uint8_t>& stream)
 		{
 			mValue = T::ReadF64(stream);
 			return std::move(*this);
@@ -241,6 +402,31 @@ namespace YNBT
 		{
 			return mValue;
 		}
+		void SetValue(decltype(mValue) value) { mValue = value; }
+		decltype(mValue) operator++() { mValue++; return mValue; }
+		decltype(mValue) operator++(int) { mValue++; return mValue; }
+
+		decltype(mValue) operator--() { mValue--; return mValue; }
+		decltype(mValue) operator--(int) { mValue--; return mValue; }
+
+		decltype(mValue) operator+=(int value) { mValue += value; return mValue; }
+		decltype(mValue) operator-=(int value) { mValue -= value; return mValue; }
+		decltype(mValue) operator*=(int value) { mValue *= value; return mValue; }
+		decltype(mValue) operator/=(int value) { mValue /= value; return mValue; }
+		decltype(mValue) operator+(int value) { return mValue + value; }
+		decltype(mValue) operator-(int value) { return mValue - value; }
+		decltype(mValue) operator*(int value) { return mValue * value; }
+		decltype(mValue) operator/(int value) { return mValue / value; }
+		decltype(mValue) operator-() { return -mValue; }
+		bool operator==(int value) { return mValue == value; }
+		bool operator!=(int value) { return mValue != value; }
+		bool operator<(int value) { return mValue < value; }
+		bool operator>(int value) { return mValue > value; }
+		bool operator<=(int value) { return mValue <= value; }
+		bool operator>=(int value) { return mValue >= value; }
+		bool operator&&(int value) { return mValue && value; }
+		bool operator||(int value) { return mValue || value; }
+		bool operator!() { return !mValue; }
 	};
 	class ByteArrayTag
 	{
@@ -249,14 +435,14 @@ namespace YNBT
 	public:
 		ByteArrayTag(std::vector<char> value = {}) : mValue(value) {}
 		template<NBTInterfaceImpl T>
-		ByteArrayTag&& Write(BinaryStream<uint8_t>& stream) 
+		ByteArrayTag&& Write(BinaryStream<uint8_t>& stream)
 		{
 			T::WriteI32(mValue.size(), stream);
 			stream.WriteBuff(mValue);
 			return std::move(*this);
 		}
 		template<NBTInterfaceImpl T>
-		ByteArrayTag&& Read(BinaryStream<uint8_t>& stream) 
+		ByteArrayTag&& Read(BinaryStream<uint8_t>& stream)
 		{
 			mValue.resize(T::ReadI32(stream));
 			for (size_t i = 0; i < mValue.size(); i++)
@@ -312,9 +498,15 @@ namespace YNBT
 	private:
 		std::vector<Tag> mValue;
 	public:
-		ListTag(std::vector<Tag> value = {}) : mValue(value) {}
+		ListTag(const std::vector<Tag>& value = {}) : mValue(value) {}
+
+		template<typename T>
+		ListTag(const std::vector<T>& value);
+		template<typename T>
+		ListTag(std::vector<T>&& value);
+
 		template<NBTInterfaceImpl T>
-		ListTag&& Write(BinaryStream<uint8_t>& stream) 
+		ListTag&& Write(BinaryStream<uint8_t>& stream)
 		{
 			if (mValue.empty())
 			{
@@ -329,7 +521,7 @@ namespace YNBT
 			return std::move(*this);
 		}
 		template<NBTInterfaceImpl T>
-		ListTag&& Read(BinaryStream<uint8_t>& stream) 
+		ListTag&& Read(BinaryStream<uint8_t>& stream)
 		{
 			uint8_t id = T::ReadI8(stream);
 			size_t size = T::ReadI32(stream);
@@ -356,7 +548,7 @@ namespace YNBT
 		{
 			return mValue;
 		}
-	
+
 		template<typename T>
 		void push_back(const T& tag);
 		template<typename T>
@@ -372,14 +564,42 @@ namespace YNBT
 			return std::get<T>(mValue[index]);
 		}
 
+		template<typename T>
+		class ConversionIter;
+
 		auto begin() const
 		{
 			return mValue.begin();
 		}
 
+		template<typename T>
+		ConversionIter<T> begin() const
+		{
+			return get_converted_iter_begin<T>();
+		}
+
+		template<typename T>
+		ConversionIter<T> begin()
+		{
+			return get_converted_iter_begin<T>();
+		}
+
+
 		auto end() const
 		{
 			return mValue.end();
+		}
+
+		template<typename T>
+		auto end() const
+		{
+			return get_converted_iter_end<T>();
+		}
+
+		template<typename T>
+		auto end()
+		{
+			return get_converted_iter_end<T>();
 		}
 
 		auto begin()
@@ -401,6 +621,37 @@ namespace YNBT
 		{
 			return mValue.size();
 		}
+
+		template<typename T>
+		ConversionIter<T> get_converted_iter_begin()
+		{
+			return ConversionIter<T>(mValue.data());
+		}
+		template<typename T>
+		ConversionIter<T> get_converted_iter_begin() const
+		{
+			return ConversionIter<T>(mValue.data());
+		}
+		template<typename T>
+		ConversionIter<T> get_converted_iter_end()
+		{
+			return ConversionIter<T>(mValue.data() + mValue.size());
+		}
+		template<typename T>
+		ConversionIter<T> get_converted_iter_end() const
+		{
+			return ConversionIter<T>(mValue.data() + mValue.size());
+		}
+
+		template<typename T>
+		void for_each(const std::function<void(const T&)>& mCallback) const;
+
+		template<typename T>
+		void for_each(const std::function<void(T&)>& mCallback);
+
+		bool holds_tag(TagID id) const;
+
+
 	};
 	class IntArrayTag
 	{
@@ -446,7 +697,7 @@ namespace YNBT
 		LongArrayTag(const LongArrayTag& other) : mValue(other.mValue) {}
 		~LongArrayTag() {};
 		template<NBTInterfaceImpl T>
-		LongArrayTag&& Write(BinaryStream<uint8_t>& stream) 
+		LongArrayTag&& Write(BinaryStream<uint8_t>& stream)
 		{
 			T::WriteI32(mValue.size(), stream);
 			for (auto& value : mValue)
@@ -454,7 +705,7 @@ namespace YNBT
 			return std::move(*this);
 		}
 		template<NBTInterfaceImpl T>
-		LongArrayTag&& Read(BinaryStream<uint8_t>& stream) 
+		LongArrayTag&& Read(BinaryStream<uint8_t>& stream)
 		{
 			mValue.resize(T::ReadI32(stream));
 			for (size_t i = 0; i < mValue.size(); i++)
@@ -483,7 +734,7 @@ namespace YNBT
 		CompoundTag(
 			const std::initializer_list<std::pair<std::string, Tag>>& value) : mValue(value) {}
 		template<NBTInterfaceImpl T>
-		CompoundTag&& Write(BinaryStream<uint8_t>& stream) 
+		CompoundTag&& Write(BinaryStream<uint8_t>& stream)
 		{
 			for (auto& [name, tag] : mValue)
 			{
@@ -610,29 +861,29 @@ namespace YNBT
 	{
 		switch (id)
 		{
-			case 0: return EndTag();
-			case 1: return ByteTag();
-			case 2: return ShortTag();
-			case 3: return IntTag();
-			case 4: return LongTag();
-			case 5: return FloatTag();
-			case 6: return DoubleTag();
-			case 7: return ByteArrayTag();
-			case 8: return StringTag();
-			case 9: return ListTag();
-			case 10: return CompoundTag();
-			case 11: return IntArrayTag();
+		case 0: return EndTag();
+		case 1: return ByteTag();
+		case 2: return ShortTag();
+		case 3: return IntTag();
+		case 4: return LongTag();
+		case 5: return FloatTag();
+		case 6: return DoubleTag();
+		case 7: return ByteArrayTag();
+		case 8: return StringTag();
+		case 9: return ListTag();
+		case 10: return CompoundTag();
+		case 11: return IntArrayTag();
 			/*case 12: return LongArrayTag(); */
-			default: return EndTag();
+		default: return EndTag();
 		}
 
 	}
 
-	
+
 
 	/*
 	* DONOT MOVE THESE
-	* They are here to deal with some template jank and they explode if inside the ListTag classes lol  
+	* They are here to deal with some template jank and they explode if inside the ListTag classes lol
 	*/
 	template<typename T>
 	void ListTag::push_back(const T& tag)
@@ -659,4 +910,55 @@ namespace YNBT
 			throw std::runtime_error("Invalid tag type");
 		mValue.push_back(std::move(tag));
 	}
+
+	template<typename T>
+	void ListTag::for_each(const std::function<void(const T&)>& mCallback) const
+	{
+		for (auto it = get_converted_iter_begin<T>(); it != get_converted_iter_end<T>(); ++it)
+			mCallback(*it);
+	}
+
+	template<typename T>
+	void ListTag::for_each(const std::function<void(T&)>& mCallback)
+	{
+		for (auto it = get_converted_iter_begin<T>(); it != get_converted_iter_end<T>(); ++it)
+			mCallback(*it);
+	}
+	template<typename T>
+	ListTag::ListTag(const std::vector<T>& value)
+	{
+		for (auto& val : value)
+			mValue.push_back(val);
+	}
+
+
+	template<typename T>
+	ListTag::ListTag(std::vector<T>&& value)
+	{
+		for (auto& val : value)
+			mValue.push_back(std::move(val));
+	}
+
+	template<typename T>
+	class ListTag::ConversionIter
+	{
+	public:
+		ConversionIter(Tag* current) : mCurrent(current) {}
+
+		T& operator*() {
+			return std::get<T>(*mCurrent);
+		}
+
+		bool operator!=(const ListTag::ConversionIter<T>& other)
+		{
+			return mCurrent != other.mCurrent;
+		}
+
+		ConversionIter& operator++() {
+			mCurrent++;
+			return *this;
+		}
+	private:
+		Tag* mCurrent;
+	};
 }
