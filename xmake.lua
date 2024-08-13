@@ -2,6 +2,7 @@ add_rules("mode.debug", "mode.release")
 set_languages("c++23")
 
 add_requires("abseil")
+add_requires("zlib", {public=false})
 
 target("YNBT")
     set_kind("static")
@@ -9,6 +10,7 @@ target("YNBT")
     add_headerfiles("ynbt/**.hpp", {public=true})
     add_includedirs("ynbt/", {public=true})
     add_packages("abseil", {public=true})
+    add_packages("zlib", {public=false})
     set_symbols("debug")
 
 for _, file in ipairs(os.files("tests/*.cpp")) do 
