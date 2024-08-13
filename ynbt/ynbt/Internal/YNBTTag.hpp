@@ -71,382 +71,250 @@ namespace YNBT
 			return 0;
 		}
 	};
-	class ByteTag
-	{
-	private:
-		char mValue;
-	public:
-		ByteTag(char value = { 0 }) : mValue(value) {}
 
-		template<NBTInterfaceImpl T>
-		ByteTag&& Write(BinaryStream<uint8_t>& stream)
+	template<NBTInterfaceImpl Interface, typename T>
+	void CallWriteViaSize(const T& val, BinaryStream<unsigned char>& stream)
+	{
+		if constexpr (std::is_integral_v<T>)
 		{
-			T::WriteI8(mValue, stream);
-			return std::move(*this);
+			if constexpr (sizeof(T) == 1)
+				Interface::WriteI8((char)val, stream);
+			else if constexpr (sizeof(T) == 2)
+				Interface::WriteI16((short)val, stream);
+			else if constexpr (sizeof(T) == 4)
+				Interface::WriteI32((int)val, stream);
+			else if constexpr (sizeof(T) == 8)
+				Interface::WriteI64((long long)val, stream);
 		}
-		template<NBTInterfaceImpl T>
-		ByteTag&& Read(BinaryStream<uint8_t>& stream)
+		else if constexpr (std::is_floating_point_v<T>)
 		{
-			mValue = T::ReadI8(stream);
-			return std::move(*this);
+			if constexpr (sizeof(T) == 4)
+				Interface::WriteF32(val, stream);
+			else if constexpr (sizeof(T) == 8)
+				Interface::WriteF64(val, stream);
 		}
+		else if constexpr (std::is_same_v<T, std::string>)
+		{
+			Interface::WriteString(val, stream);
+		}
+	}
+
+	template<NBTInterfaceImpl Interface, typename T>
+	T CallReadViaSize(BinaryStream<uint8_t>& stream)
+	{
+		if constexpr (std::is_integral_v<T>)
+		{
+			if constexpr (sizeof(T) == 1)
+				return (T)Interface::ReadI8(stream);
+			else if constexpr (sizeof(T) == 2)
+				return (T)Interface::ReadI16(stream);
+			else if constexpr (sizeof(T) == 4)
+				return (T)Interface::ReadI32(stream);
+			else if constexpr (sizeof(T) == 8)
+				return (T)Interface::ReadI64(stream);
+		}
+		else if constexpr (std::is_floating_point_v<T>)
+		{
+			if constexpr (sizeof(T) == 4)
+				return Interface::ReadF32(stream);
+			else if constexpr (sizeof(T) == 8)
+				return Interface::ReadF64(stream);
+		}
+		else if constexpr (std::is_same_v<T, std::string>)
+		{
+			return Interface::ReadString(stream);
+		}
+	}
+
+
+	template<typename T, uint8_t id>
+	class BasicTagNoReadWrite
+	{
+	protected:
+		T mValue;
+	public:
+		using self = BasicTagNoReadWrite<T, id>;
+		BasicTagNoReadWrite(T&& value) : mValue(std::move(value)) {}
+		BasicTagNoReadWrite(const T& value = T{}) : mValue(value) {}
 		uint8_t GetID() const
 		{
-			return 1;
+			return id;
 		}
+		const T& GetValue() const
+		{
+			return mValue;
+		}
+
+		T& GetValue()
+		{
+			return mValue;
+		}
+		void SetValue(const decltype(mValue)& value) { mValue = value; }
+
+		decltype(mValue) operator++() { mValue++; return mValue; }
+		decltype(mValue) operator++(int) { mValue++; return mValue; }
+
+		decltype(mValue) operator--() { mValue--; return mValue; }
+		decltype(mValue) operator--(int) { mValue--; return mValue; }
+
+		decltype(mValue) operator+=(T value) { mValue += value; return mValue; }
+		decltype(mValue) operator+=(self value) { mValue += value; return mValue; }
+		decltype(mValue) operator-=(T value) { mValue -= value; return mValue; }
+		decltype(mValue) operator-=(self value) { mValue -= value; return mValue; }
+		decltype(mValue) operator*=(T value) { mValue *= value; return mValue; }
+		decltype(mValue) operator*=(self value) { mValue *= value; return mValue; }
+		decltype(mValue) operator/=(T value) { mValue /= value; return mValue; }
+		decltype(mValue) operator/=(self value) { mValue /= value; return mValue; }
+		decltype(mValue) operator%=(T value) { mValue %= value; return mValue; }
+		decltype(mValue) operator%=(self value) { mValue %= value; return mValue; }
+		decltype(mValue) operator&=(T value) { mValue &= value; return mValue; }
+		decltype(mValue) operator&=(self value) { mValue &= value; return mValue; }
+		decltype(mValue) operator|=(T value) { mValue |= value; return mValue; }
+		decltype(mValue) operator|=(self value) { mValue |= value; return mValue; }
+		decltype(mValue) operator^=(T value) { mValue ^= value; return mValue; }
+		decltype(mValue) operator^=(self value) { mValue ^= value; return mValue; }
+		decltype(mValue) operator<<=(T value) { mValue <<= value; return mValue; }
+		decltype(mValue) operator<<=(self value) { mValue <<= value; return mValue; }
+		decltype(mValue) operator>>=(T value) { mValue >>= value; return mValue; }
+		decltype(mValue) operator>>=(self value) { mValue >>= value; return mValue; }
+		decltype(mValue) operator+(T value) { return mValue + value; }
+		decltype(mValue) operator+(self value) { return mValue + value; }
+		decltype(mValue) operator-(T value) { return mValue - value; }
+		decltype(mValue) operator-(self value) { return mValue - value; }
+		decltype(mValue) operator*(T value) { return mValue * value; }
+		decltype(mValue) operator*(self value) { return mValue * value; }
+		decltype(mValue) operator/(T value) { return mValue / value; }
+		decltype(mValue) operator/(self value) { return mValue / value; }
+		decltype(mValue) operator%(T value) { return mValue % value; }
+		decltype(mValue) operator%(self value) { return mValue % value; }
+		decltype(mValue) operator&(T value) { return mValue & value; }
+		decltype(mValue) operator&(self value) { return mValue & value; }
+		decltype(mValue) operator|(T value) { return mValue | value; }
+		decltype(mValue) operator|(self value) { return mValue | value; }
+		decltype(mValue) operator^(T value) { return mValue ^ value; }
+		decltype(mValue) operator^(self value) { return mValue ^ value; }
+		decltype(mValue) operator<<(T value) { return mValue << value; }
+		decltype(mValue) operator<<(self value) { return mValue << value; }
+		decltype(mValue) operator>>(T value) { return mValue >> value; }
+		decltype(mValue) operator>>(self value) { return mValue >> value; }
+		decltype(mValue) operator-() { return -mValue; }
+		decltype(mValue) operator~() { return ~mValue; }
+		bool operator==(T value) { return mValue == value; }
+		bool operator==(self value) { return mValue == value; }
+		bool operator!=(T value) { return mValue != value; }
+		bool operator!=(self value) { return mValue != value; }
+
+		bool operator<(T value) { return mValue < value; }
+		bool operator<(self value) { return mValue < value; }
+		bool operator>(T value) { return mValue > value; }
+		bool operator>(self value) { return mValue > value; }
+		bool operator<=(T value) { return mValue <= value; }
+		bool operator<=(self value) { return mValue <= value; }
+		bool operator>=(T value) { return mValue >= value; }
+		bool operator>=(self value) { return mValue >= value; }
+		bool operator&&(T value) { return mValue && value; }
+		bool operator&&(self value) { return mValue && value; }
+		bool operator||(T value) { return mValue || value; }
+		bool operator||(self value) { return mValue || value; }
+		bool operator!() { return !mValue; }
+		operator T&() { return mValue; }
+	};
+
+	template<typename T, uint8_t id>
+	class BasicTag : public BasicTagNoReadWrite<T, id>
+	{
+	public:
+		using BasicTagNoReadWrite<T, id>::BasicTagNoReadWrite;
+		BasicTag(T&& value) : BasicTagNoReadWrite<T, id>(std::move(value)) { }
+		BasicTag(const T& value) : BasicTagNoReadWrite<T, id>(value) { }
+
+		template<NBTInterfaceImpl Interace>
+		BasicTag&& Write(BinaryStream<uint8_t>& stream)
+		{
+			CallWriteViaSize<Interace>(this->mValue, stream);
+			return std::move(*this);
+		}
+		template<NBTInterfaceImpl Interace>
+		BasicTag&& Read(BinaryStream<uint8_t>& stream)
+		{
+			this->mValue = CallReadViaSize<Interace, short>(stream);
+			return std::move(*this);
+		}
+	};
+
+	class ByteTag : public BasicTag<char, 1>
+	{
+	public:
+		ByteTag(char value = { 0 }) : BasicTag<char, 1>(value) {}
 		const std::string& GetName() const
 		{
 			return "TAG_Byte";
 		}
-		char GetValue() const
-		{
-			return mValue;
-		}
-
-		decltype(mValue) operator++() { mValue++; return mValue; }
-		decltype(mValue) operator++(int) { mValue++; return mValue; }
-		void SetValue(decltype(mValue) value) { mValue = value; }
 	};
-	class ShortTag
+	class ShortTag : public BasicTag<short, 2>
 	{
-	private:
-		short mValue;
 	public:
-		ShortTag(short value = { 0 }) : mValue(value) {}
-		template<NBTInterfaceImpl T>
-		ShortTag&& Write(BinaryStream<uint8_t>& stream)
-		{
-			T::WriteI16(mValue, stream);
-			return std::move(*this);
-		}
-		template<NBTInterfaceImpl T>
-		ShortTag&& Read(BinaryStream<uint8_t>& stream)
-		{
-			mValue = T::ReadI16(stream);
-			return std::move(*this);
-		}
-		uint8_t GetID() const
-		{
-			return 2;
-		}
+		ShortTag(short value = { 0 }) : BasicTag<short, 2>(value) {}
 		const std::string& GetName() const
 		{
 			return "TAG_Short";
 		}
-		short GetValue() const
-		{
-			return mValue;
-		}
-		void SetValue(decltype(mValue) value) { mValue = value; }
-
-		decltype(mValue) operator++() { mValue++; return mValue; }
-		decltype(mValue) operator++(int) { mValue++; return mValue; }
-
-		decltype(mValue) operator--() { mValue--; return mValue; }
-		decltype(mValue) operator--(int) { mValue--; return mValue; }
-
-		decltype(mValue) operator+=(int value) { mValue += value; return mValue; }
-		decltype(mValue) operator-=(int value) { mValue -= value; return mValue; }
-		decltype(mValue) operator*=(int value) { mValue *= value; return mValue; }
-		decltype(mValue) operator/=(int value) { mValue /= value; return mValue; }
-		decltype(mValue) operator%=(int value) { mValue %= value; return mValue; }
-		decltype(mValue) operator&=(int value) { mValue &= value; return mValue; }
-		decltype(mValue) operator|=(int value) { mValue |= value; return mValue; }
-		decltype(mValue) operator^=(int value) { mValue ^= value; return mValue; }
-		decltype(mValue) operator<<=(int value) { mValue <<= value; return mValue; }
-		decltype(mValue) operator>>=(int value) { mValue >>= value; return mValue; }
-		decltype(mValue) operator+(int value) { return mValue + value; }
-		decltype(mValue) operator-(int value) { return mValue - value; }
-		decltype(mValue) operator*(int value) { return mValue * value; }
-		decltype(mValue) operator/(int value) { return mValue / value; }
-		decltype(mValue) operator%(int value) { return mValue % value; }
-		decltype(mValue) operator&(int value) { return mValue & value; }
-		decltype(mValue) operator|(int value) { return mValue | value; }
-		decltype(mValue) operator^(int value) { return mValue ^ value; }
-		decltype(mValue) operator<<(int value) { return mValue << value; }
-		decltype(mValue) operator>>(int value) { return mValue >> value; }
-		decltype(mValue) operator-() { return -mValue; }
-		decltype(mValue) operator~() { return ~mValue; }
-		bool operator==(int value) { return mValue == value; }
-		bool operator!=(int value) { return mValue != value; }
-		bool operator<(int value) { return mValue < value; }
-		bool operator>(int value) { return mValue > value; }
-		bool operator<=(int value) { return mValue <= value; }
-		bool operator>=(int value) { return mValue >= value; }
-		bool operator&&(int value) { return mValue && value; }
-		bool operator||(int value) { return mValue || value; }
-		bool operator!() { return !mValue; }
 	};
-	class IntTag
+	class IntTag : public BasicTag<int, 3>
 	{
-	private:
-		int mValue;
 	public:
-		IntTag(int value = { 0 }) : mValue(value) {}
-		template<NBTInterfaceImpl T>
-		IntTag&& Write(BinaryStream<uint8_t>& stream)
-		{
-			T::WriteI32(mValue, stream);
-			return std::move(*this);
-		}
-		template<NBTInterfaceImpl T>
-		IntTag&& Read(BinaryStream<uint8_t>& stream)
-		{
-			mValue = T::ReadI32(stream);
-			return std::move(*this);
-		}
-		uint8_t GetID() const
-		{
-			return 3;
-		}
+		IntTag(int value = { 0 }) : BasicTag<int, 3>(value) {}
 		const std::string& GetName() const
 		{
 			return "TAG_Int";
 		}
-		int GetValue() const
-		{
-			return mValue;
-		}
-		void SetValue(decltype(mValue) value) { mValue = value; }
-		decltype(mValue) operator++() { mValue++; return mValue; }
-		decltype(mValue) operator++(int) { mValue++; return mValue; }
-
-		decltype(mValue) operator--() { mValue--; return mValue; }
-		decltype(mValue) operator--(int) { mValue--; return mValue; }
-
-		decltype(mValue) operator+=(int value) { mValue += value; return mValue; }
-		decltype(mValue) operator-=(int value) { mValue -= value; return mValue; }
-		decltype(mValue) operator*=(int value) { mValue *= value; return mValue; }
-		decltype(mValue) operator/=(int value) { mValue /= value; return mValue; }
-		decltype(mValue) operator%=(int value) { mValue %= value; return mValue; }
-		decltype(mValue) operator&=(int value) { mValue &= value; return mValue; }
-		decltype(mValue) operator|=(int value) { mValue |= value; return mValue; }
-		decltype(mValue) operator^=(int value) { mValue ^= value; return mValue; }
-		decltype(mValue) operator<<=(int value) { mValue <<= value; return mValue; }
-		decltype(mValue) operator>>=(int value) { mValue >>= value; return mValue; }
-		decltype(mValue) operator+(int value) { return mValue + value; }
-		decltype(mValue) operator-(int value) { return mValue - value; }
-		decltype(mValue) operator*(int value) { return mValue * value; }
-		decltype(mValue) operator/(int value) { return mValue / value; }
-		decltype(mValue) operator%(int value) { return mValue % value; }
-		decltype(mValue) operator&(int value) { return mValue & value; }
-		decltype(mValue) operator|(int value) { return mValue | value; }
-		decltype(mValue) operator^(int value) { return mValue ^ value; }
-		decltype(mValue) operator<<(int value) { return mValue << value; }
-		decltype(mValue) operator>>(int value) { return mValue >> value; }
-		decltype(mValue) operator-() { return -mValue; }
-		decltype(mValue) operator~() { return ~mValue; }
-		bool operator==(int value) { return mValue == value; }
-		bool operator!=(int value) { return mValue != value; }
-		bool operator<(int value) { return mValue < value; }
-		bool operator>(int value) { return mValue > value; }
-		bool operator<=(int value) { return mValue <= value; }
-		bool operator>=(int value) { return mValue >= value; }
-		bool operator&&(int value) { return mValue && value; }
-		bool operator||(int value) { return mValue || value; }
-		bool operator!() { return !mValue; }
-
 	};
-	class LongTag
+	class LongTag : public BasicTag<long long, 4>
 	{
-	private:
-		long long mValue;
 	public:
-		LongTag(long long value = { 0 }) : mValue(value) {}
-		template<NBTInterfaceImpl T>
-		LongTag&& Write(BinaryStream<uint8_t>& stream)
-		{
-			T::WriteI64(mValue, stream);
-			return std::move(*this);
-		}
-		template<NBTInterfaceImpl T>
-		LongTag&& Read(BinaryStream<uint8_t>& stream)
-		{
-			mValue = T::ReadI64(stream);
-			return std::move(*this);
-		}
-		uint8_t GetID() const
-		{
-			return 4;
-		}
+		LongTag(long long value = { 0 }) : BasicTag<long long, 4>(value) {}
 		const std::string& GetName() const
 		{
 			return "TAG_Long";
 		}
-		long long GetValue() const
-		{
-			return mValue;
-		}
-		void SetValue(decltype(mValue) value) { mValue = value; }
-		decltype(mValue) operator++() { mValue++; return mValue; }
-		decltype(mValue) operator++(int) { mValue++; return mValue; }
-
-		decltype(mValue) operator--() { mValue--; return mValue; }
-		decltype(mValue) operator--(int) { mValue--; return mValue; }
-
-		decltype(mValue) operator+=(int value) { mValue += value; return mValue; }
-		decltype(mValue) operator-=(int value) { mValue -= value; return mValue; }
-		decltype(mValue) operator*=(int value) { mValue *= value; return mValue; }
-		decltype(mValue) operator/=(int value) { mValue /= value; return mValue; }
-		decltype(mValue) operator%=(int value) { mValue %= value; return mValue; }
-		decltype(mValue) operator&=(int value) { mValue &= value; return mValue; }
-		decltype(mValue) operator|=(int value) { mValue |= value; return mValue; }
-		decltype(mValue) operator^=(int value) { mValue ^= value; return mValue; }
-		decltype(mValue) operator<<=(int value) { mValue <<= value; return mValue; }
-		decltype(mValue) operator>>=(int value) { mValue >>= value; return mValue; }
-		decltype(mValue) operator+(int value) { return mValue + value; }
-		decltype(mValue) operator-(int value) { return mValue - value; }
-		decltype(mValue) operator*(int value) { return mValue * value; }
-		decltype(mValue) operator/(int value) { return mValue / value; }
-		decltype(mValue) operator%(int value) { return mValue % value; }
-		decltype(mValue) operator&(int value) { return mValue & value; }
-		decltype(mValue) operator|(int value) { return mValue | value; }
-		decltype(mValue) operator^(int value) { return mValue ^ value; }
-		decltype(mValue) operator<<(int value) { return mValue << value; }
-		decltype(mValue) operator>>(int value) { return mValue >> value; }
-		decltype(mValue) operator-() { return -mValue; }
-		decltype(mValue) operator~() { return ~mValue; }
-		bool operator==(int value) { return mValue == value; }
-		bool operator!=(int value) { return mValue != value; }
-		bool operator<(int value) { return mValue < value; }
-		bool operator>(int value) { return mValue > value; }
-		bool operator<=(int value) { return mValue <= value; }
-		bool operator>=(int value) { return mValue >= value; }
-		bool operator&&(int value) { return mValue && value; }
-		bool operator||(int value) { return mValue || value; }
-		bool operator!() { return !mValue; }
 	};
-	class FloatTag
+	class FloatTag : public BasicTag<float, 5>
 	{
-	private:
-		float mValue;
 	public:
-		FloatTag(float value = { 0 }) : mValue(value) {}
-		template<NBTInterfaceImpl T>
-		FloatTag&& Write(BinaryStream<uint8_t>& stream)
-		{
-			T::WriteF32(mValue, stream);
-			return std::move(*this);
-		}
-		template<NBTInterfaceImpl T>
-		FloatTag&& Read(BinaryStream<uint8_t>& stream)
-		{
-			mValue = T::ReadF32(stream);
-			return std::move(*this);
-		}
-		uint8_t GetID() const
-		{
-			return 5;
-		}
+		FloatTag(float value = { 0 }) : BasicTag<float, 5>(value) {}
 		const std::string& GetName() const
 		{
 			return "TAG_Float";
 		}
-		float GetValue() const
-		{
-			return mValue;
-		}
-		void SetValue(decltype(mValue) value) { mValue = value; }
-		decltype(mValue) operator++() { mValue++; return mValue; }
-		decltype(mValue) operator++(int) { mValue++; return mValue; }
-
-		decltype(mValue) operator--() { mValue--; return mValue; }
-		decltype(mValue) operator--(int) { mValue--; return mValue; }
-
-		decltype(mValue) operator+=(int value) { mValue += value; return mValue; }
-		decltype(mValue) operator-=(int value) { mValue -= value; return mValue; }
-		decltype(mValue) operator*=(int value) { mValue *= value; return mValue; }
-		decltype(mValue) operator/=(int value) { mValue /= value; return mValue; }
-		decltype(mValue) operator+(int value) { return mValue + value; }
-		decltype(mValue) operator-(int value) { return mValue - value; }
-		decltype(mValue) operator*(int value) { return mValue * value; }
-		decltype(mValue) operator/(int value) { return mValue / value; }
-		decltype(mValue) operator-() { return -mValue; }
-		bool operator==(int value) { return mValue == value; }
-		bool operator!=(int value) { return mValue != value; }
-		bool operator<(int value) { return mValue < value; }
-		bool operator>(int value) { return mValue > value; }
-		bool operator<=(int value) { return mValue <= value; }
-		bool operator>=(int value) { return mValue >= value; }
-		bool operator&&(int value) { return mValue && value; }
-		bool operator||(int value) { return mValue || value; }
-		bool operator!() { return !mValue; }
 	};
-	class DoubleTag
+	class DoubleTag : public BasicTag<double, 6>
 	{
-	private:
-		double mValue;
 	public:
-		DoubleTag(double value = { 0 }) : mValue(value) {}
-		template<NBTInterfaceImpl T>
-		DoubleTag&& Write(BinaryStream<uint8_t>& stream)
-		{
-			T::WriteF64(mValue, stream);
-			return std::move(*this);
-		}
-		template<NBTInterfaceImpl T>
-		DoubleTag&& Read(BinaryStream<uint8_t>& stream)
-		{
-			mValue = T::ReadF64(stream);
-			return std::move(*this);
-		}
-		uint8_t GetID() const
-		{
-			return 6;
-		}
+		DoubleTag(double value = { 0 }) : BasicTag<double, 6>(value) {}
 		const std::string& GetName() const
 		{
 			return "TAG_Double";
 		}
-		double GetValue() const
-		{
-			return mValue;
-		}
-		void SetValue(decltype(mValue) value) { mValue = value; }
-		decltype(mValue) operator++() { mValue++; return mValue; }
-		decltype(mValue) operator++(int) { mValue++; return mValue; }
-
-		decltype(mValue) operator--() { mValue--; return mValue; }
-		decltype(mValue) operator--(int) { mValue--; return mValue; }
-
-		decltype(mValue) operator+=(int value) { mValue += value; return mValue; }
-		decltype(mValue) operator-=(int value) { mValue -= value; return mValue; }
-		decltype(mValue) operator*=(int value) { mValue *= value; return mValue; }
-		decltype(mValue) operator/=(int value) { mValue /= value; return mValue; }
-		decltype(mValue) operator+(int value) { return mValue + value; }
-		decltype(mValue) operator-(int value) { return mValue - value; }
-		decltype(mValue) operator*(int value) { return mValue * value; }
-		decltype(mValue) operator/(int value) { return mValue / value; }
-		decltype(mValue) operator-() { return -mValue; }
-		bool operator==(int value) { return mValue == value; }
-		bool operator!=(int value) { return mValue != value; }
-		bool operator<(int value) { return mValue < value; }
-		bool operator>(int value) { return mValue > value; }
-		bool operator<=(int value) { return mValue <= value; }
-		bool operator>=(int value) { return mValue >= value; }
-		bool operator&&(int value) { return mValue && value; }
-		bool operator||(int value) { return mValue || value; }
-		bool operator!() { return !mValue; }
 	};
-	class ByteArrayTag
+	
+	class ByteArrayTag : public BasicTagNoReadWrite<std::vector<uint8_t>, 7>
 	{
-	private:
-		std::vector<char> mValue;
 	public:
-		ByteArrayTag(std::vector<char> value = {}) : mValue(value) {}
+		ByteArrayTag(const std::vector<uint8_t>& value = {}) : BasicTagNoReadWrite<std::vector<uint8_t>, 7>(value) {}
+		ByteArrayTag(std::vector<uint8_t>&& value) : BasicTagNoReadWrite<std::vector<uint8_t>, 7>(std::move(value)) {}
 		template<NBTInterfaceImpl T>
 		ByteArrayTag&& Write(BinaryStream<uint8_t>& stream)
 		{
-			T::WriteI32(mValue.size(), stream);
-			stream.WriteBuff(mValue);
+			T::WriteI32(this->mValue.size(), stream);
+			stream.WriteBuff(this->mValue);
 			return std::move(*this);
 		}
 		template<NBTInterfaceImpl T>
 		ByteArrayTag&& Read(BinaryStream<uint8_t>& stream)
 		{
-			mValue.resize(T::ReadI32(stream));
+			this->mValue.resize(T::ReadI32(stream));
 			for (size_t i = 0; i < mValue.size(); i++)
-				mValue[i] = T::ReadI8(stream);
+				this->mValue[i] = T::ReadI8(stream);
 			return std::move(*this);
 		}
 		uint8_t GetID() const
@@ -457,66 +325,37 @@ namespace YNBT
 		{
 			return "TAG_Byte_Array";
 		}
-		const std::vector<char>& GetValue() const
-		{
-			return mValue;
-		}
 	};
-	class StringTag
+	class StringTag : public BasicTag<std::string, 8>
 	{
-	private:
-		std::string mValue;
 	public:
-		StringTag(std::string value = {}) : mValue(value) {}
-		template<NBTInterfaceImpl T>
-		StringTag&& Write(BinaryStream<uint8_t>& stream)
-		{
-			T::WriteString(mValue, stream);
-			return std::move(*this);
-		}
-		template<NBTInterfaceImpl T>
-		StringTag&& Read(BinaryStream<uint8_t>& stream)
-		{
-			mValue = T::ReadString(stream);
-			return std::move(*this);
-		}
-		uint8_t GetID() const
-		{
-			return 8;
-		}
+		StringTag(const std::string& value = {}) : BasicTag<std::string, 8>(value) {}
 		const std::string& GetName() const
 		{
 			return "TAG_String";
 		}
-		const std::string& GetValue() const
-		{
-			return mValue;
-		}
 	};
-	class ListTag
+	class ListTag : public BasicTagNoReadWrite<std::vector<Tag>, 9>
 	{
-	private:
-		std::vector<Tag> mValue;
 	public:
-		ListTag(const std::vector<Tag>& value = {}) : mValue(value) {}
-
+		ListTag(const std::vector<Tag>& value = {}) : self(value) {}
+		ListTag(std::vector<Tag>&& value) : self(std::move(value)) {}
 		template<typename T>
 		ListTag(const std::vector<T>& value);
 		template<typename T>
 		ListTag(std::vector<T>&& value);
-
 		template<NBTInterfaceImpl T>
 		ListTag&& Write(BinaryStream<uint8_t>& stream)
 		{
-			if (mValue.empty())
+			if (this->mValue.empty())
 			{
 				T::WriteI8(0, stream);
 				T::WriteI32(0, stream);
 				return std::move(*this);
 			}
-			std::visit([&stream](auto&& arg) { T::WriteI8(arg.GetID(), stream); }, mValue[0]);
-			T::WriteI32(mValue.size(), stream);
-			for (auto& tag : mValue)
+			std::visit([&stream](auto&& arg) { T::WriteI8(arg.GetID(), stream); }, this->mValue[0]);
+			T::WriteI32(this->mValue.size(), stream);
+			for (auto& tag : this->mValue)
 				std::visit([&stream](auto&& arg) { arg.Write<T>(stream); }, tag);
 			return std::move(*this);
 		}
@@ -525,28 +364,20 @@ namespace YNBT
 		{
 			uint8_t id = T::ReadI8(stream);
 			size_t size = T::ReadI32(stream);
-			mValue.resize(size);
+			this->mValue.resize(size);
 			for (size_t i = 0; i < size; i++)
 			{
 				auto tag = TagFromId(id);
 				std::visit([&stream](auto&& arg) { arg.Read<T>(stream); }, tag);
 				if (id == 10)
 					stream.Read(); // Skip 1 byte for the end tag
-				mValue[i] = tag;
+				this->mValue[i] = tag;
 			}
 			return std::move(*this);
-		}
-		uint8_t GetID() const
-		{
-			return 9;
 		}
 		const std::string& GetName() const
 		{
 			return "TAG_List";
-		}
-		const std::vector<Tag>& GetValue() const
-		{
-			return mValue;
 		}
 
 		template<typename T>
@@ -653,90 +484,71 @@ namespace YNBT
 
 
 	};
-	class IntArrayTag
+	class IntArrayTag : public BasicTagNoReadWrite<std::vector<int>, 11>
 	{
-	private:
-		std::vector<int> mValue;
 	public:
-		IntArrayTag(std::vector<int> value = {}) : mValue(value) {}
+		IntArrayTag(const std::vector<int>& value = {}) : self(value) {}
+		IntArrayTag(std::vector<int>&& value) : self(std::move(value)) {}
 		template<NBTInterfaceImpl T>
 		IntArrayTag&& Write(BinaryStream<uint8_t>& stream)
 		{
-			T::WriteI32(mValue.size(), stream);
-			for (auto& value : mValue)
+			T::WriteI32(this->mValue.size(), stream);
+			for (auto& value : this->mValue)
 				T::WriteI32(value, stream);
 			return std::move(*this);
 		}
 		template<NBTInterfaceImpl T>
 		IntArrayTag&& Read(BinaryStream<uint8_t>& stream)
 		{
-			mValue.resize(T::ReadI32(stream));
-			for (size_t i = 0; i < mValue.size(); i++)
-				mValue[i] = T::ReadI32(stream);
+			this->mValue.resize(T::ReadI32(stream));
+			for (size_t i = 0; i < this->mValue.size(); i++)
+				this->mValue[i] = T::ReadI32(stream);
 			return std::move(*this);
-		}
-		uint8_t GetID() const
-		{
-			return 9;
 		}
 		const std::string& GetName() const
 		{
 			return "TAG_List";
 		}
-		const std::vector<int>& GetValue() const
-		{
-			return mValue;
-		}
 	};
-	class LongArrayTag
+	class LongArrayTag : public BasicTagNoReadWrite<std::vector<long long>, 12>
 	{
-	private:
-		std::vector<long long> mValue;
 	public:
-		LongArrayTag(std::vector<long long> value = {}) : mValue(value) {}
-		LongArrayTag(const LongArrayTag& other) : mValue(other.mValue) {}
-		~LongArrayTag() {};
+		LongArrayTag(const std::vector<long long>& value = {}) : self(value) {}
+		LongArrayTag(std::vector<long long>&& value) : self(std::move(value)) {}
 		template<NBTInterfaceImpl T>
 		LongArrayTag&& Write(BinaryStream<uint8_t>& stream)
 		{
-			T::WriteI32(mValue.size(), stream);
-			for (auto& value : mValue)
+			T::WriteI32(this->mValue.size(), stream);
+			for (auto& value : this->mValue)
 				T::WriteI64(value, stream);
 			return std::move(*this);
 		}
 		template<NBTInterfaceImpl T>
 		LongArrayTag&& Read(BinaryStream<uint8_t>& stream)
 		{
-			mValue.resize(T::ReadI32(stream));
-			for (size_t i = 0; i < mValue.size(); i++)
-				mValue[i] = T::ReadI64(stream);
+			this->mValue.resize(T::ReadI32(stream));
+			for (size_t i = 0; i < this->mValue.size(); i++)
+				this->mValue[i] = T::ReadI64(stream);
 			return std::move(*this);
 		}
-		uint8_t GetID() const
-		{
-			return 12;
-		}
+	
 		const std::string& GetName() const
 		{
 			return "TAG_Long_Array";
 		}
-		const std::vector<long long>& GetValue() const
-		{
-			return mValue;
-		}
 	};
-	class CompoundTag
+	class CompoundTag : public BasicTagNoReadWrite<absl::flat_hash_map<std::string, Tag>, 10>
+	
 	{
-	private:
-		absl::flat_hash_map<std::string, Tag> mValue;
 	public:
-		CompoundTag(const absl::flat_hash_map<std::string, Tag>& value = {}) : mValue(value) {}
+		CompoundTag(const absl::flat_hash_map<std::string, Tag>& value = {}) : self(value) {}
+		CompoundTag(absl::flat_hash_map<std::string, Tag>&& value) : self(std::move(value)) {}
 		CompoundTag(
-			const std::initializer_list<std::pair<std::string, Tag>>& value) : mValue(value) {}
+			const std::initializer_list<std::pair<std::string, Tag>>& value) : self(value) {}
 		template<NBTInterfaceImpl T>
 		CompoundTag&& Write(BinaryStream<uint8_t>& stream)
 		{
-			for (auto& [name, tag] : mValue)
+			for (auto& [name, tag] : this->mValue)
 			{
 				T::WriteI8(tag.index(), stream);
 				T::WriteString(name, stream);
@@ -758,7 +570,7 @@ namespace YNBT
 				auto name = T::ReadString(stream);
 				auto tag = TagFromId(id);
 				std::visit([&stream](auto&& arg) { arg.Read<T>(stream); }, tag);
-				mValue[name] = tag;
+				this->mValue[name] = tag;
 				id = stream.Peak();
 				if (isNested && id == 0)
 				{
@@ -779,80 +591,80 @@ namespace YNBT
 		}
 		const absl::flat_hash_map<std::string, Tag>& GetValue() const
 		{
-			return mValue;
+			return this->mValue;
 		}
 
 		size_t size() const
 		{
-			return mValue.size();
+			return this->mValue.size();
 		}
 
 		bool empty() const
 		{
-			return mValue.empty();
+			return this->mValue.empty();
 		}
 
 		Tag& operator[](const std::string& key)
 		{
-			return mValue[key];
+			return this->mValue[key];
 		}
 
 		const Tag& operator[](const std::string& key) const
 		{
-			return mValue.at(key);
+			return this->mValue.at(key);
 		}
 
 		template<typename T>
 		T& get(const std::string& key)
 		{
-			return std::get<T>(mValue[key]);
+			return std::get<T>(this->mValue[key]);
 		}
 
 		template<typename T>
 		const T& get(const std::string& key) const
 		{
-			return std::get<T>(mValue.at(key));
+			return std::get<T>(this->mValue.at(key));
 		}
 
 		template<typename T>
 		void set(const std::string& key, const T& value)
 		{
-			mValue[key] = value;
+			this->mValue[key] = value;
 		}
 		template<typename T>
 		void set(const std::string& key, T&& value)
 		{
-			mValue[key] = std::move(value);
+			this->mValue[key] = std::move(value);
 		}
 
 		auto find(const std::string& key) const
 		{
-			return mValue.find(key);
+			return this->mValue.find(key);
 		}
 
 		auto find(const std::string& key)
 		{
-			return mValue.find(key);
+			return this->mValue.find(key);
 		}
 
 		auto begin() const
 		{
-			return mValue.begin();
+			return this->mValue.begin();
 		}
 
 		auto end() const
 		{
-			return mValue.end();
+			return this->mValue.end();
 		}
 
 		auto begin()
 		{
-			return mValue.begin();
+			return this->mValue.begin();
 		}
 
 		auto end()
 		{
-			return mValue.end();
+			return this->mValue.end();
 		}
 
 	};
@@ -888,27 +700,27 @@ namespace YNBT
 	template<typename T>
 	void ListTag::push_back(const T& tag)
 	{
-		if (mValue.empty())
+		if (this->mValue.empty())
 		{
-			mValue.push_back(tag);
+			this->mValue.push_back(tag);
 			return;
 		}
-		if (mValue[0].index() != tag.GetID())
+		if (this->mValue[0].index() != tag.GetID())
 			throw std::runtime_error("Invalid tag type");
-		mValue.push_back(tag);
+		this->mValue.push_back(tag);
 	}
 
 	template<typename T>
 	void ListTag::push_back(T&& tag)
 	{
-		if (mValue.empty())
+		if (this->mValue.empty())
 		{
-			mValue.push_back(std::move(tag));
+			this->mValue.push_back(std::move(tag));
 			return;
 		}
-		if (mValue[0].index() != tag.GetID())
+		if (this->mValue[0].index() != tag.GetID())
 			throw std::runtime_error("Invalid tag type");
-		mValue.push_back(std::move(tag));
+		this->mValue.push_back(std::move(tag));
 	}
 
 	template<typename T>
