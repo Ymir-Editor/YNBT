@@ -54,7 +54,7 @@ namespace YNBT
 				throw std::runtime_error("Failed to open file");
 
 			std::vector<uint8_t> buffer(std::filesystem::file_size(path));
-			file.read(reinterpret_cast<int8_t *>(buffer.data()), buffer.size());
+			file.read(reinterpret_cast<char *>(buffer.data()), buffer.size());
 			file.close();
 			readFromSpan<T>(buffer);
 		}
