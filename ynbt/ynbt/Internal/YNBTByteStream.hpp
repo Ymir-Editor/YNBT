@@ -34,12 +34,12 @@ namespace YNBT
 		constexpr void Write(const U& value)
 		{
 
-			auto bytes = std::bit_cast<std::array<unsigned char, sizeof(U)>>(value);
+			auto bytes = std::bit_cast<std::array<uint8_t , sizeof(U)>>(value);
 			for (size_t i = 0; i < sizeof(U); i++)
 				Write(bytes[i]);
 		}
 
-		constexpr unsigned char Peak() const
+		constexpr uint8_t  Peak() const
 		{
 			return mBuffer[mOffset];
 		}
@@ -55,7 +55,7 @@ namespace YNBT
 		template<typename U> requires StreamWritable<T>
 		constexpr U Read()
 		{
-			std::array<unsigned char, sizeof(U)> bytes;
+			std::array<uint8_t , sizeof(U)> bytes;
 			for (size_t i = 0; i < sizeof(U); i++)
 				bytes[i] = Read();
 			return std::bit_cast<U>(bytes);
@@ -85,7 +85,7 @@ namespace YNBT
 	private:
 		constexpr void ResizeOnInvalidation()
 		{
-			if (mOffset >= mBuffer.size())
+			if (mOffset>= mBuffer.size())
 				mBuffer.resize(mBuffer.size() * 2);
 		}
 	};

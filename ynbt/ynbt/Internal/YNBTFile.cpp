@@ -4,25 +4,25 @@
 
 namespace YNBT
 {
-	std::vector<unsigned char> NBTFile::decompress(std::span<unsigned char> data)
+	std::vector<uint8_t> NBTFile::decompress(std::span<uint8_t> data)
 	{
-		if (data.size() > 2)
+		if (data.size()> 2)
 		{
 			if (data[0] == 0x1F && data[1] == 0x8B)
 				return readGZip(data);
 			else if (data[0] == 0x78 && (data[1] == 0x01 || data[1] == 0x9C || data[1] == 0xDA))
 				return readZLib(data);
 		}
-		return std::vector<unsigned char>(data.begin(), data.end());
+		return std::vector<uint8_t>(data.begin(), data.end());
 	}
-	std::vector<unsigned char> NBTFile::compress(std::span<unsigned char> data)
+	std::vector<uint8_t> NBTFile::compress(std::span<uint8_t> data)
 	{
 		
 		switch (mCompressionType)
 		{
 		case YNBT::CompressionType::GZip:
 		{
-			std::vector<unsigned char> outBuffer;
+			std::vector<uint8_t> outBuffer;
 			outBuffer.resize(data.size() + 512);
 			z_stream stream;
 			stream.zalloc = Z_NULL;
@@ -48,7 +48,7 @@ namespace YNBT
 		}
 		case YNBT::CompressionType::ZLib:
 		{
-			std::vector<unsigned char> outBuffer;
+			std::vector<uint8_t> outBuffer;
 			outBuffer.resize(data.size() + 512);
 			z_stream stream;
 			stream.zalloc = Z_NULL;
@@ -74,7 +74,7 @@ namespace YNBT
 		}
 		default:
 		{
-			std::vector<unsigned char> outBuffer;
+			std::vector<uint8_t> outBuffer;
 			outBuffer.resize(data.size());
 			for (int i = 0; i < data.size(); i++)
 				outBuffer[i] = data[i];
@@ -82,9 +82,9 @@ namespace YNBT
 		}
 		}
 	}
-	std::vector<unsigned char> NBTFile::readGZip(std::span<unsigned char> buffer)
+	std::vector<uint8_t> NBTFile::readGZip(std::span<uint8_t> buffer)
 	{
-		std::vector<unsigned char> outBuffer;
+		std::vector<uint8_t> outBuffer;
 		outBuffer.resize(1024 * 1024 * 5);
 		z_stream stream;
 		stream.zalloc = Z_NULL;
@@ -109,9 +109,9 @@ namespace YNBT
 
 		return outBuffer;
 	}
-	std::vector<unsigned char> NBTFile::readZLib(std::span<unsigned char> buffer)
+	std::vector<uint8_t> NBTFile::readZLib(std::span<uint8_t> buffer)
 	{
-		std::vector<unsigned char> outBuffer;
+		std::vector<uint8_t> outBuffer;
 		outBuffer.resize(1024 * 1024 * 5);
 		z_stream stream;
 		stream.zalloc = Z_NULL;

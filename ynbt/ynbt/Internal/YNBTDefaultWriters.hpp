@@ -19,12 +19,12 @@ namespace YNBT
 			stream.Write(SwitchEndian(value, E));
 		}
 
-		static void WriteI8(char value, BinaryStream<uint8_t>& stream)
+		static void WriteI8(int8_t  value, BinaryStream<uint8_t>& stream)
 		{
 			stream.Write(value);
 		}
 
-		static void WriteI16(short value, BinaryStream<uint8_t>& stream)
+		static void WriteI16(int16_t value, BinaryStream<uint8_t>& stream)
 		{
 			stream.Write(SwitchEndian(value, E));
 		}
@@ -34,7 +34,7 @@ namespace YNBT
 			stream.Write(SwitchEndian(value, E));
 		}
 
-		static void WriteI64(long long value, BinaryStream<uint8_t>& stream)
+		static void WriteI64(int64_t value, BinaryStream<uint8_t>& stream)
 		{
 			stream.Write(SwitchEndian(value, E));
 		}
@@ -57,14 +57,14 @@ namespace YNBT
 			return SwitchEndian(stream.Read<double>(), E);
 		}
 
-		static char ReadI8(BinaryStream<uint8_t>& stream)
+		static int8_t  ReadI8(BinaryStream<uint8_t>& stream)
 		{
-			return stream.Read<char>();
+			return stream.Read<int8_t>();
 		}
 
-		static short ReadI16(BinaryStream<uint8_t>& stream)
+		static int16_t ReadI16(BinaryStream<uint8_t>& stream)
 		{
-			return SwitchEndian(stream.Read<short>(), E);
+			return SwitchEndian(stream.Read<int16_t>(), E);
 		}
 
 		static int ReadI32(BinaryStream<uint8_t>& stream)
@@ -72,9 +72,9 @@ namespace YNBT
 			return SwitchEndian(stream.Read<int>(), E);
 		}
 
-		static long long ReadI64(BinaryStream<uint8_t>& stream)
+		static int64_t ReadI64(BinaryStream<uint8_t>& stream)
 		{
-			return SwitchEndian(stream.Read<long long>(), E);
+			return SwitchEndian(stream.Read<int64_t>(), E);
 		}
 
 		static std::string ReadString(BinaryStream<uint8_t>& stream)

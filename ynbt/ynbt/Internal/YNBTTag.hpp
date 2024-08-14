@@ -40,7 +40,7 @@ namespace YNBT
 
 	using Tag = std::variant<EndTag, ByteTag, ShortTag, IntTag, LongTag, FloatTag, DoubleTag, ByteArrayTag, StringTag, ListTag, CompoundTag, IntArrayTag, LongArrayTag>;
 
-	static Tag TagFromId(uint8_t id);
+	static Tag TagFromId(uint8_t  id);
 
 	class EndTag
 	{
@@ -58,7 +58,7 @@ namespace YNBT
 			T::ReadI8(stream);
 			return std::move(*this);
 		}
-		uint8_t GetID() const
+		uint8_t  GetID() const
 		{
 			return 0;
 		}
@@ -66,25 +66,25 @@ namespace YNBT
 		{
 			return "TAG_End";
 		}
-		uint8_t GetValue() const
+		uint8_t  GetValue() const
 		{
 			return 0;
 		}
 	};
 
 	template<NBTInterfaceImpl Interface, typename T>
-	void CallWriteViaSize(const T& val, BinaryStream<unsigned char>& stream)
+	void CallWriteViaSize(const T& val, BinaryStream<uint8_t>& stream)
 	{
 		if constexpr (std::is_integral_v<T>)
 		{
 			if constexpr (sizeof(T) == 1)
-				Interface::WriteI8((char)val, stream);
+				Interface::WriteI8((int8_t)val, stream);
 			else if constexpr (sizeof(T) == 2)
-				Interface::WriteI16((short)val, stream);
+				Interface::WriteI16((int16_t)val, stream);
 			else if constexpr (sizeof(T) == 4)
 				Interface::WriteI32((int)val, stream);
 			else if constexpr (sizeof(T) == 8)
-				Interface::WriteI64((long long)val, stream);
+				Interface::WriteI64((int64_t)val, stream);
 		}
 		else if constexpr (std::is_floating_point_v<T>)
 		{
@@ -127,7 +127,7 @@ namespace YNBT
 	}
 
 
-	template<typename T, uint8_t id>
+	template<typename T, uint8_t  id>
 	class BasicTagNoReadWrite
 	{
 	protected:
@@ -136,7 +136,7 @@ namespace YNBT
 		using self = BasicTagNoReadWrite<T, id>;
 		BasicTagNoReadWrite(T&& value) : mValue(std::move(value)) {}
 		BasicTagNoReadWrite(const T& value = T{}) : mValue(value) {}
-		uint8_t GetID() const
+		uint8_t  GetID() const
 		{
 			return id;
 		}
@@ -175,8 +175,8 @@ namespace YNBT
 		decltype(mValue) operator^=(self value) { mValue ^= value; return mValue; }
 		decltype(mValue) operator<<=(T value) { mValue <<= value; return mValue; }
 		decltype(mValue) operator<<=(self value) { mValue <<= value; return mValue; }
-		decltype(mValue) operator>>=(T value) { mValue >>= value; return mValue; }
-		decltype(mValue) operator>>=(self value) { mValue >>= value; return mValue; }
+		decltype(mValue) operator>>=(T value) { mValue>>= value; return mValue; }
+		decltype(mValue) operator>>=(self value) { mValue>>= value; return mValue; }
 		decltype(mValue) operator+(T value) { return mValue + value; }
 		decltype(mValue) operator+(self value) { return mValue + value; }
 		decltype(mValue) operator-(T value) { return mValue - value; }
@@ -195,8 +195,8 @@ namespace YNBT
 		decltype(mValue) operator^(self value) { return mValue ^ value; }
 		decltype(mValue) operator<<(T value) { return mValue << value; }
 		decltype(mValue) operator<<(self value) { return mValue << value; }
-		decltype(mValue) operator>>(T value) { return mValue >> value; }
-		decltype(mValue) operator>>(self value) { return mValue >> value; }
+		decltype(mValue) operator>>(T value) { return mValue>> value; }
+		decltype(mValue) operator>>(self value) { return mValue>> value; }
 		decltype(mValue) operator-() { return -mValue; }
 		decltype(mValue) operator~() { return ~mValue; }
 		bool operator==(T value) { return mValue == value; }
@@ -206,21 +206,21 @@ namespace YNBT
 
 		bool operator<(T value) { return mValue < value; }
 		bool operator<(self value) { return mValue < value; }
-		bool operator>(T value) { return mValue > value; }
-		bool operator>(self value) { return mValue > value; }
+		bool operator>(T value) { return mValue> value; }
+		bool operator>(self value) { return mValue> value; }
 		bool operator<=(T value) { return mValue <= value; }
 		bool operator<=(self value) { return mValue <= value; }
-		bool operator>=(T value) { return mValue >= value; }
-		bool operator>=(self value) { return mValue >= value; }
+		bool operator>=(T value) { return mValue>= value; }
+		bool operator>=(self value) { return mValue>= value; }
 		bool operator&&(T value) { return mValue && value; }
 		bool operator&&(self value) { return mValue && value; }
 		bool operator||(T value) { return mValue || value; }
 		bool operator||(self value) { return mValue || value; }
 		bool operator!() { return !mValue; }
-		operator T&() { return mValue; }
+		operator T& () { return mValue; }
 	};
 
-	template<typename T, uint8_t id>
+	template<typename T, uint8_t  id>
 	class BasicTag : public BasicTagNoReadWrite<T, id>
 	{
 	public:
@@ -242,22 +242,22 @@ namespace YNBT
 		}
 	};
 
-	class ByteTag : public BasicTag<char, 1>
+	class ByteTag : public BasicTag<int8_t, 1>
 	{
 	public:
-		ByteTag(char value = { 0 }) : BasicTag<char, 1>(value) {}
+		ByteTag(int8_t  value = { 0 }) : BasicTag<int8_t, 1>(value) {}
 		const std::string& GetName() const
 		{
 			return "TAG_Byte";
 		}
 	};
-	class ShortTag : public BasicTag<short, 2>
+	class ShortTag : public BasicTag<int16_t, 2>
 	{
 	public:
-		ShortTag(short value = { 0 }) : BasicTag<short, 2>(value) {}
+		ShortTag(int16_t value = { 0 }) : BasicTag<int16_t, 2>(value) {}
 		const std::string& GetName() const
 		{
-			return "TAG_Short";
+			return "TAG_int16_t";
 		}
 	};
 	class IntTag : public BasicTag<int, 3>
@@ -269,10 +269,10 @@ namespace YNBT
 			return "TAG_Int";
 		}
 	};
-	class LongTag : public BasicTag<long long, 4>
+	class LongTag : public BasicTag<int64_t, 4>
 	{
 	public:
-		LongTag(long long value = { 0 }) : BasicTag<long long, 4>(value) {}
+		LongTag(int64_t value = { 0 }) : BasicTag<int64_t, 4>(value) {}
 		const std::string& GetName() const
 		{
 			return "TAG_Long";
@@ -296,7 +296,7 @@ namespace YNBT
 			return "TAG_Double";
 		}
 	};
-	
+
 	class ByteArrayTag : public BasicTagNoReadWrite<std::vector<uint8_t>, 7>
 	{
 	public:
@@ -317,7 +317,7 @@ namespace YNBT
 				this->mValue[i] = T::ReadI8(stream);
 			return std::move(*this);
 		}
-		uint8_t GetID() const
+		uint8_t  GetID() const
 		{
 			return 7;
 		}
@@ -378,7 +378,7 @@ namespace YNBT
 		template<NBTInterfaceImpl T>
 		ListTag&& Read(BinaryStream<uint8_t>& stream)
 		{
-			uint8_t id = T::ReadI8(stream);
+			uint8_t  id = T::ReadI8(stream);
 			size_t size = T::ReadI32(stream);
 			this->mValue.resize(size);
 			for (size_t i = 0; i < size; i++)
@@ -526,11 +526,11 @@ namespace YNBT
 			return "TAG_List";
 		}
 	};
-	class LongArrayTag : public BasicTagNoReadWrite<std::vector<long long>, 12>
+	class LongArrayTag : public BasicTagNoReadWrite<std::vector<int64_t>, 12>
 	{
 	public:
-		LongArrayTag(const std::vector<long long>& value = {}) : self(value) {}
-		LongArrayTag(std::vector<long long>&& value) : self(std::move(value)) {}
+		LongArrayTag(const std::vector<int64_t>& value = {}) : self(value) {}
+		LongArrayTag(std::vector<int64_t>&& value) : self(std::move(value)) {}
 		template<NBTInterfaceImpl T>
 		LongArrayTag&& Write(BinaryStream<uint8_t>& stream)
 		{
@@ -547,7 +547,7 @@ namespace YNBT
 				this->mValue[i] = T::ReadI64(stream);
 			return std::move(*this);
 		}
-	
+
 		const std::string& GetName() const
 		{
 			return "TAG_Long_Array";
@@ -575,7 +575,7 @@ namespace YNBT
 		template<NBTInterfaceImpl T>
 		CompoundTag&& Read(BinaryStream<uint8_t>& stream)
 		{
-			char id = stream.Peak();
+			int8_t id = stream.Peak();
 			bool isNested = false;
 			while (id != 0 && isNested == false)
 			{
@@ -596,7 +596,7 @@ namespace YNBT
 			}
 			return std::move(*this);
 		}
-		uint8_t GetID() const
+		uint8_t  GetID() const
 		{
 			return 10;
 		}
@@ -684,7 +684,7 @@ namespace YNBT
 
 	};
 
-	static Tag TagFromId(uint8_t id)
+	static Tag TagFromId(uint8_t  id)
 	{
 		switch (id)
 		{

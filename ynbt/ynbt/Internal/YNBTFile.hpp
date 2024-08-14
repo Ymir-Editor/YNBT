@@ -21,31 +21,31 @@ namespace YNBT
 		std::string mRootName{};
 		CompressionType mCompressionType{ CompressionType::None };
 		bool mHasBedrockHeader{ false };
-		constexpr static std::array<unsigned char, 11> mBedrockHeader = {
+		constexpr static std::array<uint8_t , 11> mBedrockHeader = {
 			0x0A, 0x00, 0x00, 0x00, 0xEF, 0x0A, 0x00, 0x00, 0x0A,0x00, 0x00
 		};
 	private:
 		template<NBTInterfaceImpl T>
-		void readFromSpan(std::span<unsigned char> data)
+		void readFromSpan(std::span<uint8_t> data)
 		{
 			auto realData = decompress(data);
-			BinaryStream<unsigned char> stream(realData);
+			BinaryStream<uint8_t> stream(realData);
 			auto TagType = stream.Read();
 			if (TagType != 0xA)
 				throw std::runtime_error("Invalid NBT file");
 			auto tag = StringTag{}.Read<T>(stream);
 			mRootName = tag.GetValue();
 			mRootTag = CompoundTag{}.Read<T>(stream);
-			if (mRootTag.size() == 0 && realData.size() > 11)
+			if (mRootTag.size() == 0 && realData.size()> 11)
 			{
 				stream.GoTo(11);
 				mRootTag = CompoundTag{}.Read<T>(stream);
-				if (mRootTag.size() > 0)
+				if (mRootTag.size()> 0)
 					mHasBedrockHeader = true;
 			}
 		}
-		std::vector<unsigned char> decompress(std::span<unsigned char> data);
-		std::vector<unsigned char> compress(std::span<unsigned char> data);
+		std::vector<uint8_t> decompress(std::span<uint8_t> data);
+		std::vector<uint8_t> compress(std::span<uint8_t> data);
 		template<NBTInterfaceImpl T>
 		void readFromPath(const std::filesystem::path& path)
 		{
@@ -53,14 +53,14 @@ namespace YNBT
 			if (!file.is_open())
 				throw std::runtime_error("Failed to open file");
 
-			std::vector<unsigned char> buffer(std::filesystem::file_size(path));
-			file.read(reinterpret_cast<char*>(buffer.data()), buffer.size());
+			std::vector<uint8_t> buffer(std::filesystem::file_size(path));
+			file.read(reinterpret_cast<int8_t *>(buffer.data()), buffer.size());
 			file.close();
 			readFromSpan<T>(buffer);
 		}
 
-		std::vector<unsigned char> readGZip(std::span<unsigned char> buffer);
-		std::vector<unsigned char> readZLib(std::span<unsigned char> buffer);
+		std::vector<uint8_t> readGZip(std::span<uint8_t> buffer);
+		std::vector<uint8_t> readZLib(std::span<uint8_t> buffer);
 	public:
 		NBTFile() = default;
 		template<NBTInterfaceImpl T>
@@ -69,7 +69,7 @@ namespace YNBT
 			readFromPath<T>(path);
 		}
 		template<NBTInterfaceImpl T>
-		NBTFile(std::span<unsigned char> data)
+		NBTFile(std::span<uint8_t> data)
 		{
 			readFromSpan<T>(data);
 		}
@@ -85,7 +85,7 @@ namespace YNBT
 			readFromPath<T>(path);
 		}
 		template<typename T>
-		void ReadFromSpan(std::span<unsigned char> data)
+		void ReadFromSpan(std::span<uint8_t> data)
 		{
 			readFromSpan<T>(data);
 		}
@@ -93,13 +93,13 @@ namespace YNBT
 
 
 		template<NBTInterfaceImpl T>
-		std::vector<unsigned char> Serialize()
+		std::vector<uint8_t> Serialize()
 		{
-			std::vector<unsigned char> buffer(1024 * 1024 * 5, 0x1);
-			BinaryStream<unsigned char> stream(buffer);
+			std::vector<uint8_t> buffer(1024 * 1024 * 5, 0x1);
+			BinaryStream<uint8_t> stream(buffer);
 			if (!mHasBedrockHeader)
 			{
-				stream.Write<unsigned char>(0xA);
+				stream.Write<uint8_t>(0xA);
 				T::WriteString(mRootName, stream);
 			}
 			else
@@ -117,7 +117,7 @@ namespace YNBT
 			std::ofstream file(path, std::ios::binary);
 			if (!file.is_open())
 				throw std::runtime_error("Failed to open file");
-			file.write(reinterpret_cast<char*>(buffer.data()), buffer.size());
+			file.write(reinterpret_cast<const char*>(buffer.data()), buffer.size());
 			file.close();
 		}
 		template<typename T>

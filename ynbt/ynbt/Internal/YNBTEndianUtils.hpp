@@ -4,7 +4,7 @@
 namespace YNBT
 {
 	template<typename T>
-	using SameSizeType = std::conditional_t<sizeof(T) == 1, uint8_t, std::conditional_t<sizeof(T) == 2, uint16_t, std::conditional_t<sizeof(T) == 4, uint32_t, uint64_t>>>;
+	using SameSizeType = std::conditional_t<sizeof(T) == 1, uint8_t , std::conditional_t<sizeof(T) == 2, uint16_t, std::conditional_t<sizeof(T) == 4, uint32_t, uint64_t>>>;
 
 	template<typename T>
 	constexpr T SwitchEndian(T val, std::endian target)
