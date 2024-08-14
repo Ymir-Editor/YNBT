@@ -42,6 +42,8 @@ namespace YNBT
 		static void WriteString(const std::string& value, BinaryStream<uint8_t>& stream)
 		{
 			WriteI16(value.size(), stream);
+			if (value.size() == 0)
+				return;
 			stream.WriteBuff(value);
 		}
 

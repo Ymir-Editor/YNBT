@@ -102,7 +102,11 @@ namespace YNBT
 	template<NBTInterfaceImpl Interface, typename T>
 	T CallReadViaSize(BinaryStream<uint8_t>& stream)
 	{
-		if constexpr (std::is_integral_v<T>)
+		if constexpr (std::is_same_v<T, std::string>)
+		{
+			return Interface::ReadString(stream);
+		}
+		else if constexpr (std::is_integral_v<T>)
 		{
 			if constexpr (sizeof(T) == 1)
 				return (T)Interface::ReadI8(stream);
@@ -119,10 +123,6 @@ namespace YNBT
 				return Interface::ReadF32(stream);
 			else if constexpr (sizeof(T) == 8)
 				return Interface::ReadF64(stream);
-		}
-		else if constexpr (std::is_same_v<T, std::string>)
-		{
-			return Interface::ReadString(stream);
 		}
 	}
 
@@ -231,13 +231,13 @@ namespace YNBT
 		template<NBTInterfaceImpl Interace>
 		BasicTag&& Write(BinaryStream<uint8_t>& stream)
 		{
-			CallWriteViaSize<Interace>(this->mValue, stream);
+			CallWriteViaSize<Interace, T>(this->mValue, stream);
 			return std::move(*this);
 		}
 		template<NBTInterfaceImpl Interace>
 		BasicTag&& Read(BinaryStream<uint8_t>& stream)
 		{
-			this->mValue = CallReadViaSize<Interace, short>(stream);
+			this->mValue = CallReadViaSize<Interace, T>(stream);
 			return std::move(*this);
 		}
 	};
@@ -326,10 +326,26 @@ namespace YNBT
 			return "TAG_Byte_Array";
 		}
 	};
-	class StringTag : public BasicTag<std::string, 8>
+	class StringTag : public BasicTagNoReadWrite<std::string, 8>
 	{
 	public:
-		StringTag(const std::string& value = {}) : BasicTag<std::string, 8>(value) {}
+		StringTag(const std::string& value = {}) : BasicTagNoReadWrite<std::string, 8>(value) {}
+		StringTag(std::string&& value) : BasicTagNoReadWrite<std::string, 8>(std::move(value)) {}
+
+		template<NBTInterfaceImpl T>
+		StringTag&& Write(BinaryStream<uint8_t>& stream)
+		{
+			T::WriteString(this->mValue, stream);
+			return std::move(*this);
+		}
+
+		template<NBTInterfaceImpl T>
+		StringTag&& Read(BinaryStream<uint8_t>& stream)
+		{
+			this->mValue = T::ReadString(stream);
+			return std::move(*this);
+		}
+
 		const std::string& GetName() const
 		{
 			return "TAG_String";
@@ -538,7 +554,6 @@ namespace YNBT
 		}
 	};
 	class CompoundTag : public BasicTagNoReadWrite<absl::flat_hash_map<std::string, Tag>, 10>
-	
 	{
 	public:
 		CompoundTag(const absl::flat_hash_map<std::string, Tag>& value = {}) : self(value) {}

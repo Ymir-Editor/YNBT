@@ -73,8 +73,13 @@ namespace YNBT
 			return outBuffer;
 		}
 		default:
-			return std::vector<unsigned char>(data.begin(), data.end());
-			break;
+		{
+			std::vector<unsigned char> outBuffer;
+			outBuffer.resize(data.size());
+			for (int i = 0; i < data.size(); i++)
+				outBuffer[i] = data[i];
+			return outBuffer;
+		}
 		}
 	}
 	std::vector<unsigned char> NBTFile::readGZip(std::span<unsigned char> buffer)
