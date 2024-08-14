@@ -526,6 +526,7 @@ namespace YNBT
 			return "TAG_List";
 		}
 	};
+
 	class LongArrayTag : public BasicTagNoReadWrite<std::vector<int64_t>, 12>
 	{
 	public:
@@ -700,7 +701,7 @@ namespace YNBT
 		case 9: return ListTag();
 		case 10: return CompoundTag();
 		case 11: return IntArrayTag();
-			/*case 12: return LongArrayTag(); */
+		case 12: return LongArrayTag(); 
 		default: return EndTag();
 		}
 
