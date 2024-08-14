@@ -356,10 +356,10 @@ namespace YNBT
 	public:
 		ListTag(const std::vector<Tag>& value = {}) : self(value) {}
 		ListTag(std::vector<Tag>&& value) : self(std::move(value)) {}
-		template<typename T>
-		ListTag(const std::vector<T>& value);
-		template<typename T>
-		ListTag(std::vector<T>&& value);
+		template<typename Container> requires std::ranges::range<Container>
+		ListTag(const Container& value);
+		template<typename Container> requires std::ranges::range<Container>
+		ListTag(Container&& value);
 		template<NBTInterfaceImpl T>
 		ListTag&& Write(BinaryStream<uint8_t>& stream)
 		{
@@ -752,16 +752,17 @@ namespace YNBT
 		for (auto it = get_converted_iter_begin<T>(); it != get_converted_iter_end<T>(); ++it)
 			mCallback(*it);
 	}
-	template<typename T>
-	ListTag::ListTag(const std::vector<T>& value)
+	
+	template<typename Container> requires std::ranges::range<Container>
+	ListTag::ListTag(const Container& value)
 	{
 		for (auto& val : value)
 			mValue.push_back(val);
 	}
 
 
-	template<typename T>
-	ListTag::ListTag(std::vector<T>&& value)
+	template<typename Container> requires std::ranges::range<Container>
+	ListTag::ListTag(Container&& value)
 	{
 		for (auto& val : value)
 			mValue.push_back(std::move(val));
