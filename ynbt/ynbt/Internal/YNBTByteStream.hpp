@@ -1,6 +1,6 @@
 #pragma once
 #include <vector>
-#include <ranges>
+#include <bit>
 #include <span>
 #include <type_traits>
 namespace YNBT
