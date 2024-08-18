@@ -86,7 +86,7 @@ namespace YNBT
 		constexpr void ResizeOnInvalidation()
 		{
 			if (mOffset>= mBuffer.size())
-				mBuffer.resize(mBuffer.size() * 2);
+				mBuffer.resize(mBuffer.size() * 2 + 1);
 		}
 	};
 }
